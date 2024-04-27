@@ -32,7 +32,10 @@ oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connector-mongodb.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
 helm install mongodb bitnami/mongodb \
---set podSecurityContext.fsGroup="",containerSecurityContext.enabled=false,podSecurityContext.enabled=false,auth.enabled=false --version 13.6.0 \
+--set architecture=replicaset \
+--set replicaCount=3 \
+--set podSecurityContext.fsGroup="",containerSecurityContext.enabled=false,podSecurityContext.enabled=false,auth.enabled=false \
+--version 13.6.0 \
 -n <your-namespace>
 
 MSSQL:
