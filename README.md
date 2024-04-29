@@ -26,8 +26,8 @@ External image registry and source repository access
 KafkaConnect:
 oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connect-metrics-example.yaml
 oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connect.yaml
-oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connector-sqlserver-debezium.yaml 
-oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connector-mongodb.yaml
+oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connector-mongodb-source-custom.yaml
+oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connector-mongodb-sink.yaml
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
@@ -38,38 +38,21 @@ helm install mongodb bitnami/mongodb \
 --version 13.6.0 \
 -n <your-namespace>
 
-MSSQL:
-oc new-project mssql
-oc -n mssql apply -f yaml/mssql/mssql-data.yaml
-oc -n mssql apply -f yaml/mssql/mssql-sql.yaml
-
-The following step must be completed as cluster-admin:
-
-oc -n mssql adm policy add-scc-to-user anyuid -z default
-
-oc -n mssql apply -f yaml/mssql/mssql-deployment.yaml
-oc -n mssql apply -f yaml/mssql/mssql-service.yaml
-
-oc -n mssql exec $(oc -n mssql get pods -l 'deployment=dbserver' -o jsonpath='{.items[0].metadata.name}') -- /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Abcd1234' -i /opt/workshop/mssql-sql.sql
-
 ```
 
 ## Post Installation Steps
-Insert some item descriptions into the MS SQL Server DB.
+Insert some data into the MongoDB.OrdersDB.raworders collection.
 
 ```
-oc -n mssql run sql-server -ti --image=mcr.microsoft.com/mssql/server:2022-latest --rm=true --restart=Never -- /opt/mssql-tools/bin/sqlcmd -S server.mssql.svc -U sa -P 'Abcd1234'
-```
-
-```
+oc -n <your-namespace> exec -it <your-mongodb-pod> -- /bin/bash
 use OrdersDB
-go
-
-insert into ItemDescription values ('In-Progress', 'Cogs')
-insert into ItemDescription values ('In-Progress', 'Sprockets')
-insert into ItemDescription values ('In-Progress', 'Ball Bearings')
-insert into ItemDescription values ('In-Progress', 'Rotator Splints')
-insert into ItemDescription values ('In-Progress', 'Doodads')
-go
-
+show collections
+db.raworders.insertOne({"Raw" : "Customer-AAA"})
+db.raworders.insertOne({"Raw" : "Customer-BBB"})
 ```
+
+Call the Custom Quarkus MongoDB Source Connector
+```
+curl -v "http://localhost:8088/mongo/holajson?dbname=ordersdb&collectionName=raworders"
+```
+Observe the workflow: OrdersDB.raworders collection-->Quarkus MongoDB Source Connector-->Orders Topic->MongoDB Sink Connector-->Ordersdb.orders collection
