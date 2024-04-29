@@ -1,6 +1,6 @@
 # amq-streams-kafka-connect
 
-![Architecture](./kafka-source-sink.png)
+![Architecture](./kafka-connect-overview.png)
 
 ## Prerequisites:
 
