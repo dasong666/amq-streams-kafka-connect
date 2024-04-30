@@ -26,7 +26,6 @@ External image registry and source repository access
 KafkaConnect:
 oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connect-metrics-example.yaml
 oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connect.yaml
-oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connector-mongodb-source-custom.yaml
 oc -n <your-namespace> apply -f yaml/kafka-connect/kafka-connector-mongodb-sink.yaml
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
